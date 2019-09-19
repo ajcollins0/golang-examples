@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -43,20 +42,16 @@ func (s *Server) CloseDB() {
 }
 
 // CreateHost - add host information to DB
-func (s *Server)CreateHost() http.HandlerFunc{
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		host := r.URL.Query()["target"][0]
-		stmt, err := s.Db.Prepare("INSERT INTO hosts(host) values(?)")
-		if err != nil {
-			log.Fatal(err)
-		}
-		res, err := stmt.Exec(host)
-		fmt.Println(res)
-		if err != nil {
-			log.Fatal(err)
-		}
+func (s *Server)CreateHost(w http.ResponseWriter, r *http.Request){
+	host := r.URL.Query()["target"][0]
+	stmt, err := s.Db.Prepare("INSERT INTO hosts(host) values(?)")
+	if err != nil {
+		log.Fatal(err)
 	}
-	return http.HandlerFunc(fn)
+	_, err = stmt.Exec(host)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -68,7 +63,7 @@ func main() {
 	s.OpenDB(dbSTr)
 	defer s.CloseDB()
 
-	s.Serv.HandleFunc("/addhost", s.CreateHost())
+	s.Serv.HandleFunc("/addhost", s.CreateHost)
 
 	log.Fatal(http.ListenAndServe(":8080", s.Serv))
 }
