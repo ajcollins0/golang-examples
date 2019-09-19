@@ -43,7 +43,7 @@ func (s *Server) CloseDB() {
 }
 
 // CreateHost - add host information to DB
-func CreateHost(s *Server) http.HandlerFunc {
+func (s *Server)CreateHost() http.HandlerFunc{
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		host := r.URL.Query()["target"][0]
 		stmt, err := s.Db.Prepare("INSERT INTO hosts(host) values(?)")
@@ -68,7 +68,7 @@ func main() {
 	s.OpenDB(dbSTr)
 	defer s.CloseDB()
 
-	s.Serv.HandleFunc("/addhost", CreateHost(s))
+	s.Serv.HandleFunc("/addhost", s.CreateHost())
 
 	log.Fatal(http.ListenAndServe(":8080", s.Serv))
 }
